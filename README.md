@@ -9,7 +9,7 @@ O algoritmo mede a similaridade entre duas sequências temporais sujeitas a dist
 3. **Controle de Memória:** Estrutura de dados central alocada globalmente (matriz de ~8 Kbytes em tempo de compilação).
 
 ## Autores / Estudantes
-- Matheus de Sousa Almeida
+- Matheus de Sousa Almeida a
 - Vinicius Silva Pereira
 
 ## Plataforma Alvo
