@@ -1,0 +1,14 @@
+# Arquivos de objeto (gerados na compilação)
+*.o
+
+# Executáveis (Windows, Linux, macOS)
+*.exe
+*.out
+dtw_app
+
+# Arquivos temporários do Sistema Operacional
+.DS_Store
+Thumbs.db
+
+# Diretório gerado pelo Doxygen 
+docs/
