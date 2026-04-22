@@ -34,7 +34,7 @@ int main(void) {
     // 2. SELEÇÃO DE CENÁRIO PARA A DEMONSTRAÇÃO
     // ==========================================================
     // Modifique esta variável (0, 1, 2 ou 3) antes de compilar para apresentar
-    int CENARIO_TESTE = 0; 
+    int CENARIO_TESTE = 3; 
 
     printf("\n======================================================================\n");
     printf("             VALIDAÇÃO DTW - SISTEMAS EMBARCADOS (T1)                 \n");
@@ -76,40 +76,51 @@ int main(void) {
     printf(" -> Distancia Escalar DTW Final: %.2f\n", distance);
     printf(" -> Passos no Caminho Otimo: %d passos (Max: %d)\n\n", path_length, DTW_MAX_PATH_LEN);
 
-    // 6. Exibição Fragmentada da Matriz
-    printf("[3] FRAGMENTO DA MATRIZ DE CUSTO (Canto 10x10)\n");
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 10; j++) {
-            printf("%4.1f ", matriz_custo[i][j]);
-        }
-        printf("\n");
-    }
-    printf(" (Restante omitido por legibilidade...)\n\n");
 
     // 7. Mapa Visual do Backtracking
-    printf("[4] MAPA VISUAL DO BACKTRACKING (Grade 45x45)\n");
+    printf("[3] MAPA VISUAL DO BACKTRACKING (Grade 45x45)\n");
     printf(" ('.' = Matriz preenchida | '*' = Caminho escolhido de ponta a ponta)\n\n");
 
     char mapa_visual[DTW_SIGNAL_SIZE][DTW_SIGNAL_SIZE];
     
+    // Inicializa o mapa com pontinhos
     for (int i = 0; i < DTW_SIGNAL_SIZE; i++) {
         for (int j = 0; j < DTW_SIGNAL_SIZE; j++) {
             mapa_visual[i][j] = '.';
         }
     }
     
+    // Sobrepõe as coordenadas da rota com asteriscos
     for (int k = 0; k < path_length; k++) {
         mapa_visual[path[k].x][path[k].y] = '*';
     }
 
-    for (int i = 0; i < DTW_SIGNAL_SIZE; i++) {
-        printf("%02d| ", i);
+    // IMPRESSÃO INVERTIDA (Estilo Plano Cartesiano)
+    for (int i = DTW_SIGNAL_SIZE - 1; i >= 0; i--) {
+        if (i == DTW_SIGNAL_SIZE / 2) {
+            printf("Sinal A %02d| ", i); // Coloca o rótulo bem no meio do Eixo Y
+        } else {
+            printf("        %02d| ", i); // Mantém o alinhamento
+        }
+        
         for (int j = 0; j < DTW_SIGNAL_SIZE; j++) {
             printf("%c ", mapa_visual[i][j]);
         }
         printf("\n");
     }
 
+    // Desenha o Eixo X na base para ficar ainda mais profissional
+    printf("            "); // Espaçamento do eixo Y
+    for (int j = 0; j < DTW_SIGNAL_SIZE; j++) {
+        printf("--");
+    }
+    printf("\n            ");
+    for (int j = 0; j < DTW_SIGNAL_SIZE; j++) {
+        // Imprime apenas os números divisíveis por 5 para não poluir
+        if (j % 5 == 0) printf("%02d", j);
+        else printf("  "); 
+    }
+    printf(" Sinal B\n"); // Rótulo do Eixo X no final
     printf("\n======================================================================\n\n");
 
     return 0;
