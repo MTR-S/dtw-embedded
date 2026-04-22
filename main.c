@@ -33,14 +33,19 @@ int main(void) {
     // ==========================================================
     // 2. SELEÇÃO DE CENÁRIO PARA A DEMONSTRAÇÃO
     // ==========================================================
-    // Modifique esta variável (1, 2 ou 3) antes de compilar para apresentar
-    int CENARIO_TESTE = 1; 
+    // Modifique esta variável (0, 1, 2 ou 3) antes de compilar para apresentar
+    int CENARIO_TESTE = 0; 
 
     printf("\n======================================================================\n");
     printf("             VALIDAÇÃO DTW - SISTEMAS EMBARCADOS (T1)                 \n");
     printf("======================================================================\n\n");
 
-    if (CENARIO_TESTE == 1) {
+    if (CENARIO_TESTE == 0) {
+        printf(">> CENARIO 0: Aceitação total (Sinais exatamente iguais)) <<\n\n");
+        for (int i = 10; i <= 20; i++) signal_a[i] = 1.0f; // Pulso normal
+        for (int i = 10; i <= 20; i++) signal_b[i] = 1.0f; // Pulso normal
+    }
+    else if (CENARIO_TESTE == 1) {
         printf(">> CENARIO 1: O Atraso Perfeito (Mesmo sinal, tempos diferentes) <<\n\n");
         for (int i = 10; i <= 15; i++) signal_a[i] = 1.0f; // Pulso Original
         for (int i = 30; i <= 35; i++) signal_b[i] = 1.0f; // Pulso Atrasado
