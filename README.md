@@ -1,34 +1,33 @@
-# Projeto: Dynamic Time Warping (DTW) com Backtracking - Etapa T1
+# Projeto DTW (Dynamic Time Warping) - Sistemas Embarcados
 
-## Apresentação Geral e Contexto
-Este projeto faz parte da disciplina de Sistemas Embarcados (Etapa T1 - Workstation). O objetivo é implementar o algoritmo chamado de **Dynamic Time Warping (DTW)** na estação de trabalho (Host/PC) como prova de conceito, já projetado estritamente para os recursos e limitações de um sistema embarcado.
+Este repositório contém a implementação rigorosa em linguagem C do algoritmo **Dynamic Time Warping (DTW)** com suporte a *Backtracking*, desenvolvido como parte da avaliação "T1 Workstation" para a disciplina de Sistemas Embarcados.
 
-O algoritmo mede a similaridade entre duas sequências temporais sujeitas a distorções (ex: variação de velocidade) e traça o caminho ótimo de alinhamento. A arquitetura de software obedece a três regras restritas:
-1. **100% Iterativo:** Nenhuma função recursiva é utilizada.
-2. **Alocação Estática:** Ausência total de alocação dinâmica de memória (`malloc`/`free`).
-3. **Controle de Memória:** Estrutura de dados central alocada globalmente (matriz de ~8 Kbytes em tempo de compilação).
+O foco principal desta base de código é a legibilidade, previsibilidade de memória (zero alocação dinâmica), aderência irrestrita aos padrões de documentação **Doxygen** e validação contínua através de scripts de Benchmarking.
 
-## Autores / Estudantes
-- Matheus de Sousa Almeida
-- Vinicius Silva Pereira
+## Arquitetura e Hierarquia do Projeto
 
-## Plataforma Alvo
-- **Fase Atual (T1 - Validação):** Estação de Trabalho Host (PC Windows/Linux/macOS) via GCC.
-- **Fase Futura (T2 - Migração):** Microcontrolador (Arquitetura Embarcada).
+O ecossistema do projeto foi projetado para espelhar ambientes profissionais de firmware e sistemas restritos:
 
-## Entradas e Saídas
-- **Entrada:** Dois vetores estáticos unidimensionais de tamanho 45 (`float sinalA[45]` e `float sinalB[45]`), simulando dados de sensores.
-- **Saída:** 1. Valor de distância mínima escalar (`float`).
-  2. Vetores de coordenadas X e Y detalhando o caminho do alinhamento ótimo.
+### 1. Módulos Core do Algoritmo
+* **`dtw.h` (Interface):** Atua como o contrato público do módulo. Define os `#defines` globais, `structs` e as assinaturas. Ele blinda o usuário da complexidade interna do algoritmo.
+* **`dtw.c` (Motor Algorítmico):** Abriga a lógica de processamento matemático de tabulação e o backtracking não-recursivo. Garante encapsulamento profundo usando variáveis `static` e alocação na seção `.bss`.
 
-## Hierarquia de Arquivos
-A modularização do projeto foi feita para facilitar o reuso na Etapa T2.
+### 2. Infraestrutura de Validação e Teste (Testbench)
+* **`main.c` (Ponto de Entrada / Testbench):** Um ambiente de testes parametrizável em C que reage a injeções de entrada (via `stdin`). Contém 20 casos de testes divididos em 5 categorias (sinais ideais, distorção, ruídos, etc.) e utiliza timers de alta resolução do S.O. (`clock_gettime`) para medições puras de performance.
+* **`teste_automatizado.py` (O Orquestrador de CI):** Script de benchmarking escrito em Python. Seu papel é interagir com o `main.c`, executar o cálculo DTW usando a consagrada biblioteca do `SciPy` (Golden Reference), executar o binário C em paralelo e gerar relatórios comprovando que ambas as arquiteturas chegam matematicamente aos exatos mesmos resultados e caminhos. O resultado sai no arquivo gerado `relatorio_dtw.txt`.
 
-```text
-dtw-embedded/
-├── .gitignore      # Ignora arquivos binários e gerados automaticamente.
-├── Makefile        # Script de automação de compilação (gcc).
-├── README.md       # Documentação principal da hierarquia e escopo.
-├── dtw.h           # Interface do módulo: definições, macros e protótipos (Doxygen).
-├── dtw.c           # Implementação: lógica do DTW e alocação da matriz de custo global.
-└── main.c          # Ponto de entrada no PC: injeção de sinais falsos para testes.
+### 3. Automação de Build
+* **`Makefile`:** Orquestra a compilação local definindo flags de segurança restritas (`-Wall -Wextra -Wpedantic -std=c99`). Facilita a vida do desenvolvedor condensando o fluxo de build.
+* **`.gitignore`:** Previne que binários gerados, metadados locais e o próprio arquivo de log `relatorio_dtw.txt` contaminem o repositório GIT.
+
+## Como Compilar e Usar (Estação Host)
+
+### Pré-requisitos
+* Compilador GCC e `make`.
+* Python 3.x com as bibliotecas `numpy` e `dtw-python` (`pip install numpy dtw-python`).
+
+### Passo 1: Compilar o Firmware/Projeto
+Abra o terminal na pasta raiz do projeto e execute:
+```bash
+make
+```

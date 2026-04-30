@@ -1,0 +1,28 @@
+=======================================================================================================================================
+RELATORIO OFICIAL DE VALIDACAO E BENCHMARKING DTW (PYTHON SciPy vs FIRMWARE C)
+=======================================================================================================================================
+ID  | CATEGORIA              | DISTÂNCIA ESCALAR DTW       | PASSOS ROTA         | TEMPOS DE EXECUÇÃO (us)    | PARIDADE
+    |                        | Python (SciPy)| Linguagem C | Python |Linguagem C | Python      | Linguagem C  | 
+---------------------------------------------------------------------------------------------------------------------------------------
+[00] | 1. Sinais Iguais       | 0.00000000   | 0.00000000  | 45     | 45         |    659.9 us |      8.3 us  | ✅ Valores Exatos
+[01] | 1. Sinais Iguais       | 0.00000000   | 0.00000000  | 45     | 45         |    399.3 us |      5.6 us  | ✅ Valores Exatos
+[02] | 1. Sinais Iguais       | 0.00000000   | 0.00000000  | 45     | 45         |    694.4 us |      5.8 us  | ✅ Valores Exatos
+[03] | 1. Sinais Iguais       | 0.00000000   | 0.00000000  | 45     | 45         |    417.8 us |     15.2 us  | ✅ Valores Exatos
+[04] | 2. Atraso Temporal     | 0.00000000   | 0.00000000  | 50     | 50         |    404.8 us |      4.7 us  | ✅ Valores Exatos
+[05] | 2. Atraso Temporal     | 0.00000000   | 0.00000000  | 55     | 55         |    330.3 us |      5.8 us  | ✅ Valores Exatos
+[06] | 2. Atraso Temporal     | 0.00000000   | 0.00000000  | 75     | 75         |    382.8 us |      5.5 us  | ✅ Valores Exatos
+[07] | 2. Atraso Temporal     | 0.00000000   | 0.00000000  | 70     | 70         |    431.6 us |      6.2 us  | ✅ Valores Exatos
+[08] | 3. Distorcao (Warping) | 0.00000000   | 0.00000000  | 55     | 55         |    489.9 us |      6.2 us  | ✅ Valores Exatos
+[09] | 3. Distorcao (Warping) | 0.00000000   | 0.00000000  | 55     | 55         |    341.3 us |     12.5 us  | ✅ Valores Exatos
+[10] | 3. Distorcao (Warping) | 0.00000000   | 0.00000000  | 70     | 70         |    421.1 us |      4.7 us  | ✅ Valores Exatos
+[11] | 3. Distorcao (Warping) | 0.00000000   | 0.00000000  | 70     | 70         |    892.2 us |      6.4 us  | ✅ Valores Exatos
+[12] | 4. Ruidos/Anomalias    | 2.00000000   | 2.00000000  | 47     | 45         |    360.4 us |      4.6 us  | ❌ Divergência Encontrada
+[13] | 4. Ruidos/Anomalias    | 2.00000000   | 2.00000000  | 47     | 45         |    618.7 us |      4.6 us  | ❌ Divergência Encontrada
+[14] | 4. Ruidos/Anomalias    | 4.00000000   | 4.00000000  | 57     | 57         |    466.5 us |      4.9 us  | ✅ Valores Exatos
+[15] | 4. Ruidos/Anomalias    | 34.00000000  | 34.00000000 | 69     | 56         |    371.8 us |      4.8 us  | ❌ Divergência Encontrada
+[16] | 5. Extremos de Sensor  | 0.00000000   | 0.00000000  | 45     | 45         |    805.3 us |      4.5 us  | ✅ Valores Exatos
+[17] | 5. Extremos de Sensor  | 0.00000000   | 0.00000000  | 45     | 45         |    316.9 us |      5.5 us  | ✅ Valores Exatos
+[18] | 5. Extremos de Sensor  | 11.00000000  | 11.00000000 | 56     | 45         |    344.9 us |      5.7 us  | ❌ Divergência Encontrada
+[19] | 5. Extremos de Sensor  | 11.00000000  | 11.00000000 | 56     | 45         |    465.8 us |      5.6 us  | ❌ Divergência Encontrada
+=======================================================================================================================================
+TESTE E BENCHMARKING CONCLUIDOS COM SUCESSO.
