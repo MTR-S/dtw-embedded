@@ -105,7 +105,7 @@ int main(void) {
     double tempo_execucao_s = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
 
     /* ----------------------------------------------------------------------
-     * EXPORTAÇÃO DOS RESULTADOS (Padrão Regex-Friendly)
+     * EXPORTAÇÃO DOS RESULTADOS 
      * ---------------------------------------------------------------------- */
     printf(" -> Distancia Escalar DTW Final: %.8f\n", distance);
     printf(" -> Passos no Caminho Otimo: %d passos\n", path_length);
