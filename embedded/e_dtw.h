@@ -1,25 +1,28 @@
 /**
  * @file dtw.h
- * @brief Interface do módulo Dynamic Time Warping (DTW) com Backtracking.
+ * @brief Interface do módulo Dynamic Time Warping (DTW) com Backtracking e Ponto Fixo.
  *
  * @details Como usar (help): A aplicação principal deve incluir este cabeçalho e
  * invocar dtw_compute() passando os sinais de entrada e os ponteiros para armazenamento
  * do caminho de backtracking. O algoritmo preencherá o caminho percorrido e seu tamanho.
  * * Contexto do desenvolvimento: Trabalho da disciplina Sistemas Embarcados/T2 (Migração).
  * * Entrada: O algoritmo DTW recebe os dois sinais a serem comparados em forma de vetor
- * de inteiros de 16 bits (const uint16_t *signal_a e const uint16_t *signal_b).
+ * de inteiros de 16 bits.
+ * @note ARQUITETURA DE PONTO FIXO: Os valores de entrada (uint16_t) representam 
+ * números decimais escalonados pelo fator DTW_SCALE_FACTOR.
  * * Saída: O módulo possui duas vias de saída:
  * 1. Retorno principal (uint16_t): A distância escalar mínima acumulada (custo DTW).
  * 2. Parâmetros por referência: O caminho ótimo de alinhamento (backtracking), retornado
  * através dos ponteiros (dtw_path_point_t *path_out) e seu tamanho real (int *path_length).
  * * Plataforma Alvo: Placa Nucleo STM32F030R8 (ARM Cortex-M0).
  *
- * @note AJUSTE DE MIGRAÇÃO: Para contornar a limitação de 8KB de RAM da MCU,
- * os dados foram refatorados de 'float' para 'uint16_t', e as coordenadas
- * do caminho foram otimizadas de 'int' para 'uint8_t'.
+ * @note AJUSTE DE MIGRAÇÃO: Para contornar a limitação de 8KB de RAM e a ausência de FPU 
+ * (Floating-Point Unit) na MCU, adotou-se a Matemática de Ponto Fixo. Os dados foram 
+ * refatorados de 'float' para 'uint16_t' escalonados, e as coordenadas do caminho foram 
+ * otimizadas de 'int' para 'uint8_t' (reduzindo o consumo de RAM no vetor em 75%).
  *
  * @author Matheus de Sousa Almeida e Vinicius Silva Pereira
- * @date 08 de Maio de 2026
+ * @date 11 de Maio de 2026
  * @copyright Permissões de uso: Uso acadêmico.
  */
 
@@ -27,6 +30,11 @@
 #define DTW_H
 
 #include <stdint.h>
+
+/** * @def DTW_SCALE_FACTOR
+ * @brief Fator multiplicador para a matemática de Ponto Fixo (3 casas decimais).
+ */
+#define DTW_SCALE_FACTOR 1000
 
 /** * @def DTW_SIGNAL_SIZE
  * @brief Tamanho fixo dos vetores de entrada (sinais).
@@ -41,7 +49,7 @@
 /**
  * @struct dtw_path_point_t
  * @brief Coordenadas que representam um ponto na matriz de custo durante o backtracking.
- * @details Uso de uint8_t reduz o consumo de RAM no vetor de caminho em 75%.
+ * @details Uso de uint8_t reduz drasticamente o consumo de RAM do microcontrolador.
  */
 typedef struct {
     uint8_t x; /**< Coordenada no eixo X (índice do signal_a) na matriz de custo. */
@@ -56,7 +64,7 @@ typedef struct {
  * @param path_out Ponteiro para o vetor pré-alocado que armazenará as coordenadas do caminho.
  * @param path_length Ponteiro para a variável que armazenará a quantidade de passos do caminho.
  *
- * @return uint16_t Distância mínima escalar acumulada entre os dois sinais.
+ * @return uint16_t Distância mínima escalar acumulada entre os dois sinais (escalonada).
  *
  * @note OBRIGATÓRIO: Modifica a variável estática matriz_custo internamente.
  */

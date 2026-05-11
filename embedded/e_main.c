@@ -1,17 +1,19 @@
 /**
  * @file      main.c
  * @author    Matheus de Sousa Almeida e [Nome da sua Dupla]
- * @date      10 de Maio de 2026
- * @brief     Bancada embarcada de validação do algoritmo DTW via UART.
+ * @date      11 de Maio de 2026
+ * @brief     Bancada embarcada de validação do algoritmo DTW via UART (Ponto Fixo).
  * @details   Desenvolvido para a disciplina de Sistemas Embarcados (T2).
- * O sistema gera arrays de sinais, calcula a distância
- * elástica temporal e transmite os resultados da matriz via USART2.
+ * O sistema gera arrays de sinais escalonados, calcula a distância
+ * elástica temporal e transmite os resultados decimais via USART2.
  * @copyright Todos os direitos reservados.
  *
  * @note      RESTRIÇÕES DA PLATAFORMA ALVO:
- * - MCU: STM32F030R8 (ARM Cortex-M0)
+ * - MCU: STM32F030R8 (ARM Cortex-M0 sem FPU).
  * - Memória limitante: 8 KB SRAM.
- * - Solução: Refatoração da matriz DTW de float (32 bits) para uint16_t (16 bits).
+ * - Solução: Adoção de Matemática de Ponto Fixo. Sinais e Matriz DTW foram refatorados 
+ * para 'uint16_t' com fator de escala 1000 (3 casas decimais). Isso eliminou 
+ * o overhead de processamento (soft-float) e evitou o RAM Overflow.
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -80,7 +82,7 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
-  // Alocação das variáveis com uint16_t para salvar RAM (Downgrade de Float)
+  // Alocação das variáveis com uint16_t (Ponto Fixo)
   uint16_t signal_a[DTW_SIGNAL_SIZE] = {0};
   uint16_t signal_b[DTW_SIGNAL_SIZE] = {0};
   dtw_path_point_t path[DTW_MAX_PATH_LEN];
@@ -95,50 +97,52 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    printf("\n========================================================\r\n");
-    printf("   VALIDACAO DTW EMBARCADO - NUCLEO STM32F030R8 \r\n");
-    printf("========================================================\r\n");
-    printf("ID | CUSTO (uint16) | PASSOS ROTA | TEMPO (ms)\r\n");
-    printf("--------------------------------------------------------\r\n");
+    printf("\n==========================================================\r\n");
+    printf("   VALIDACAO DTW EMBARCADO (PONTO FIXO) - NUCLEO STM32 \r\n");
+    printf("==========================================================\r\n");
+    printf("ID | CUSTO (Decimal) | PASSOS ROTA | TEMPO (ms)\r\n");
+    printf("----------------------------------------------------------\r\n");
 
     for (int cenario = 0; cenario < 20; cenario++) {
 
-        // Zera os arrays para a próxima iteração
+        // Zera os arrays para a próxima iteração (0 em Ponto Fixo continua sendo 0)
         for(int i = 0; i < DTW_SIGNAL_SIZE; i++) { signal_a[i] = 0; signal_b[i] = 0; }
 
         // ==========================================================
         // INJEÇÃO DOS 20 CENÁRIOS DE TESTE DIRETAMENTE NA PLACA
+        // Utilizando o Fator de Escala (1000 = 1.000)
         // ==========================================================
+        
         // --- CATEGORIA 1: SINAIS IDEAIS E IGUAIS ---
-        if      (cenario == 0) { for(int i=10; i<=20; i++) { signal_a[i]=1; signal_b[i]=1; } }
-        else if (cenario == 1) { for(int i=15; i<=18; i++) { signal_a[i]=1; signal_b[i]=1; } }
-        else if (cenario == 2) { for(int i=5;  i<=40; i++) { signal_a[i]=1; signal_b[i]=1; } }
-        else if (cenario == 3) { for(int i=10; i<=15; i++) { signal_a[i]=1; signal_b[i]=1; }
-                                 for(int i=30; i<=35; i++) { signal_a[i]=1; signal_b[i]=1; } }
+        if      (cenario == 0) { for(int i=10; i<=20; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
+        else if (cenario == 1) { for(int i=15; i<=18; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
+        else if (cenario == 2) { for(int i=5;  i<=40; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
+        else if (cenario == 3) { for(int i=10; i<=15; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; }
+                                 for(int i=30; i<=35; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
 
         // --- CATEGORIA 2: ATRASOS TEMPORAIS (SHIFT) ---
-        else if (cenario == 4) { for(int i=10; i<=20; i++) signal_a[i]=1; for(int i=15; i<=25; i++) signal_b[i]=1; }
-        else if (cenario == 5) { for(int i=20; i<=30; i++) signal_a[i]=1; for(int i=10; i<=20; i++) signal_b[i]=1; }
-        else if (cenario == 6) { for(int i=5;  i<=10; i++) signal_a[i]=1; for(int i=35; i<=40; i++) signal_b[i]=1; }
-        else if (cenario == 7) { for(int i=30; i<=35; i++) signal_a[i]=1; for(int i=5;  i<=10; i++) signal_b[i]=1; }
+        else if (cenario == 4) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=15; i<=25; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 5) { for(int i=20; i<=30; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 6) { for(int i=5;  i<=10; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=35; i<=40; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 7) { for(int i=30; i<=35; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=10; i++) signal_b[i]=DTW_SCALE_FACTOR; }
 
         // --- CATEGORIA 3: DISTORÇÃO ELÁSTICA (WARPING) ---
-        else if (cenario == 8)  { for(int i=10; i<=15; i++) signal_a[i]=1; for(int i=10; i<=25; i++) signal_b[i]=1; }
-        else if (cenario == 9)  { for(int i=10; i<=25; i++) signal_a[i]=1; for(int i=10; i<=15; i++) signal_b[i]=1; }
-        else if (cenario == 10) { for(int i=5;  i<=10; i++) signal_a[i]=1; for(int i=5;  i<=35; i++) signal_b[i]=1; }
-        else if (cenario == 11) { for(int i=5;  i<=35; i++) signal_a[i]=1; for(int i=5;  i<=10; i++) signal_b[i]=1; }
+        else if (cenario == 8)  { for(int i=10; i<=15; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=25; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 9)  { for(int i=10; i<=25; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=15; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 10) { for(int i=5;  i<=10; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=35; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 11) { for(int i=5;  i<=35; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=10; i++) signal_b[i]=DTW_SCALE_FACTOR; }
 
         // --- CATEGORIA 4: RUÍDOS E ANOMALIAS ---
-        else if (cenario == 12) { for(int i=10; i<=20; i++) signal_a[i]=1; for(int i=10; i<=20; i++) signal_b[i]=1; signal_b[2]=1; signal_b[3]=1; }
-        else if (cenario == 13) { for(int i=10; i<=20; i++) signal_a[i]=1; for(int i=10; i<=20; i++) signal_b[i]=1; signal_b[42]=1; signal_b[43]=1; }
-        else if (cenario == 14) { for(int i=10; i<=20; i++) signal_a[i]=1; for(int i=5;  i<=8;  i++) signal_b[i]=1; for(int i=35; i<=38; i++) signal_b[i]=1; }
-        else if (cenario == 15) { for(int i=10; i<=20; i++) signal_a[i]=1; for(int i=0;  i<=9;  i++) signal_b[i]=1; for(int i=21; i<=44; i++) signal_b[i]=1; }
+        else if (cenario == 12) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; signal_b[2]=DTW_SCALE_FACTOR; signal_b[3]=DTW_SCALE_FACTOR; }
+        else if (cenario == 13) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; signal_b[42]=DTW_SCALE_FACTOR; signal_b[43]=DTW_SCALE_FACTOR; }
+        else if (cenario == 14) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=8;  i++) signal_b[i]=DTW_SCALE_FACTOR; for(int i=35; i<=38; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 15) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=0;  i<=9;  i++) signal_b[i]=DTW_SCALE_FACTOR; for(int i=21; i<=44; i++) signal_b[i]=DTW_SCALE_FACTOR; }
 
         // --- CATEGORIA 5: CASOS EXTREMOS DE SENSOR ---
         else if (cenario == 16) { /* Ambos vazios (0), nada a fazer */ }
-        else if (cenario == 17) { for(int i=0; i<DTW_SIGNAL_SIZE; i++) { signal_a[i]=1; signal_b[i]=1; } }
-        else if (cenario == 18) { for(int i=10; i<=20; i++) signal_a[i]=1; }
-        else if (cenario == 19) { for(int i=10; i<=20; i++) signal_b[i]=1; }
+        else if (cenario == 17) { for(int i=0; i<DTW_SIGNAL_SIZE; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
+        else if (cenario == 18) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 19) { for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; }
 
         // ==========================================================
         // EXECUÇÃO E BENCHMARKING
@@ -153,14 +157,20 @@ int main(void)
         // Pisca o LED da placa para mostrar que está processando
         HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
-        // Imprime o resultado formatado via UART
-        printf("[%02d]| %-14d | %-11d | %lu ms\r\n", cenario, distance, path_length, tempo_execucao_ms);
+        // O TRUQUE DE ENGENHARIA: Restaura a vírgula para impressão no PC
+        // Imprime a parte inteira (distance / 1000) e a parte fracionária (distance % 1000)
+        printf("[%02d]| %6d.%03d   | %-11d | %lu ms\r\n", 
+               cenario, 
+               distance / DTW_SCALE_FACTOR, 
+               distance % DTW_SCALE_FACTOR, 
+               path_length, 
+               tempo_execucao_ms);
     }
 
     // Desliga o LED após terminar o lote de 20
     HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
-    printf("========================================================\r\n");
+    printf("==========================================================\r\n");
     printf("TESTE CONCLUIDO. Reiniciando em 10 segundos...\r\n");
 
     HAL_Delay(10000); // Espera 10 segundos antes de recomeçar o loop
