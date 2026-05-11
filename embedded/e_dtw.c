@@ -6,9 +6,9 @@
  * backtracking não-recursivo do DTW. Compile junto com o arquivo principal da aplicação.
  * * * Contexto do desenvolvimento: Trabalho da disciplina Sistemas Embarcados/T2.
  * * Entrada: O algoritmo DTW recebe os dois sinais a serem comparados em forma de vetor
- * de inteiros de 16 bits. 
- * @note ARQUITETURA DE PONTO FIXO: Os vetores (const uint16_t *signal_a e *signal_b) 
- * não são inteiros puros, mas sim representações decimais escalonadas por um fator 
+ * de inteiros de 16 bits.
+ * @note ARQUITETURA DE PONTO FIXO: Os vetores (const uint16_t *signal_a e *signal_b)
+ * não são inteiros puros, mas sim representações decimais escalonadas por um fator
  * multiplicador (ex: x1000 para 3 casas decimais). O valor 1000 representa 1.000.
  * * * Saída: O módulo possui duas vias de saída:
  * 1. Retorno principal (uint16_t): A distância escalar mínima acumulada em Ponto Fixo.

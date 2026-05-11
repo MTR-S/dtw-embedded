@@ -4,16 +4,16 @@
  * @date      11 de Maio de 2026
  * @brief     Bancada embarcada de validação do algoritmo DTW via UART (Ponto Fixo).
  * @details   Desenvolvido para a disciplina de Sistemas Embarcados (T2).
- * O sistema gera arrays de sinais escalonados, calcula a distância
- * elástica temporal e transmite os resultados decimais via USART2.
+ * O sistema gera arrays de sinais escalonados simulando curvas analógicas,
+ * calcula a distância elástica temporal e transmite os resultados decimais via USART2.
  * @copyright Todos os direitos reservados.
  *
  * @note      RESTRIÇÕES DA PLATAFORMA ALVO:
  * - MCU: STM32F030R8 (ARM Cortex-M0 sem FPU).
  * - Memória limitante: 8 KB SRAM.
- * - Solução: Adoção de Matemática de Ponto Fixo. Sinais e Matriz DTW foram refatorados 
- * para 'uint16_t' com fator de escala 1000 (3 casas decimais). Isso eliminou 
- * o overhead de processamento (soft-float) e evitou o RAM Overflow.
+ * - Solução: Adoção de Matemática de Ponto Fixo. Sinais e Matriz DTW foram refatorados
+ * para 'uint16_t' com fator de escala 100 (2 casas decimais). Isso eliminou
+ * o overhead de processamento (soft-float) e impediu o RAM/Integer Overflow.
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -56,14 +56,35 @@ static void MX_USART2_UART_Init(void);
 
 /**
  * @brief Redireciona a saída padrão (printf) para a UART2.
- * @details Permite o uso de printf para enviar strings diretamente para
- * o terminal do PC (PuTTY/TeraTerm) via cabo USB.
  */
 int _write(int file, char *ptr, int len) {
     HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
     return len;
 }
 
+/* ==========================================================================
+ * FUNÇÕES AUXILIARES PARA INJEÇÃO DE SINAIS (PONTO FIXO)
+ * ========================================================================== */
+
+/**
+ * @brief Copia um padrão de onda para dentro do vetor de sinal.
+ */
+void injetar_sinal_fixo(uint16_t *vetor, int inicio, const uint16_t *formato, int tamanho) {
+    for(int i = 0; i < tamanho; i++) {
+        if ((inicio + i) < DTW_SIGNAL_SIZE) {
+            vetor[inicio + i] = formato[i];
+        }
+    }
+}
+
+/**
+ * @brief Preenche uma faixa do vetor com um valor constante escalonado.
+ */
+void preencher_constante_fixa(uint16_t *vetor, int inicio, int fim, uint16_t valor) {
+    for(int i = inicio; i <= fim && i < DTW_SIGNAL_SIZE; i++) {
+        vetor[i] = valor;
+    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -88,6 +109,14 @@ int main(void)
   dtw_path_point_t path[DTW_MAX_PATH_LEN];
   int path_length = 0;
 
+  /* ==========================================================
+   * BIBLIOTECA DE PADRÕES DE ONDA (ESCALONADOS x100)
+   * Armazenados na Flash (const) para evitar consumo de SRAM
+   * ========================================================== */
+  const uint16_t pulso_gaussiano[11] = {20, 60, 150, 280, 370, 400, 370, 280, 150, 60, 20};
+  const uint16_t pulso_quadrado[6]   = {150, 320, 320, 320, 320, 150};
+  const uint16_t ruido_forte[3]      = {380, 450, 290};
+
   // Limpa o terminal na inicialização
   printf("\033[2J\033[H");
 
@@ -105,44 +134,98 @@ int main(void)
 
     for (int cenario = 0; cenario < 20; cenario++) {
 
-        // Zera os arrays para a próxima iteração (0 em Ponto Fixo continua sendo 0)
+        // Zera os arrays para a próxima iteração
         for(int i = 0; i < DTW_SIGNAL_SIZE; i++) { signal_a[i] = 0; signal_b[i] = 0; }
 
-        // ==========================================================
-        // INJEÇÃO DOS 20 CENÁRIOS DE TESTE DIRETAMENTE NA PLACA
-        // Utilizando o Fator de Escala (1000 = 1.000)
-        // ==========================================================
-        
+        /* ==========================================================
+         * INJEÇÃO DOS 20 CENÁRIOS DE TESTE DIRETAMENTE NA PLACA
+         * ========================================================== */
+
         // --- CATEGORIA 1: SINAIS IDEAIS E IGUAIS ---
-        if      (cenario == 0) { for(int i=10; i<=20; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
-        else if (cenario == 1) { for(int i=15; i<=18; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
-        else if (cenario == 2) { for(int i=5;  i<=40; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
-        else if (cenario == 3) { for(int i=10; i<=15; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; }
-                                 for(int i=30; i<=35; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
+        if      (cenario == 0) {
+            injetar_sinal_fixo(signal_a, 10, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 10, pulso_gaussiano, 11);
+        }
+        else if (cenario == 1) {
+            injetar_sinal_fixo(signal_a, 15, pulso_quadrado, 6);
+            injetar_sinal_fixo(signal_b, 15, pulso_quadrado, 6);
+        }
+        else if (cenario == 2) {
+            // Sinal Dente de Serra longo (0.5 + variação) escalonado x100
+            for(int i=5; i<=40; i++) { signal_a[i] = signal_b[i] = 50 + (i % 5) * 60; }
+        }
+        else if (cenario == 3) {
+            injetar_sinal_fixo(signal_a, 10, pulso_quadrado, 6); injetar_sinal_fixo(signal_b, 10, pulso_quadrado, 6);
+            injetar_sinal_fixo(signal_a, 30, pulso_quadrado, 6); injetar_sinal_fixo(signal_b, 30, pulso_quadrado, 6);
+        }
 
         // --- CATEGORIA 2: ATRASOS TEMPORAIS (SHIFT) ---
-        else if (cenario == 4) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=15; i<=25; i++) signal_b[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 5) { for(int i=20; i<=30; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 6) { for(int i=5;  i<=10; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=35; i<=40; i++) signal_b[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 7) { for(int i=30; i<=35; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=10; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 4) {
+            injetar_sinal_fixo(signal_a, 10, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 15, pulso_gaussiano, 11);
+        }
+        else if (cenario == 5) {
+            injetar_sinal_fixo(signal_a, 20, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 10, pulso_gaussiano, 11);
+        }
+        else if (cenario == 6) {
+            injetar_sinal_fixo(signal_a, 5, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 30, pulso_gaussiano, 11);
+        }
+        else if (cenario == 7) {
+            injetar_sinal_fixo(signal_a, 30, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 5, pulso_gaussiano, 11);
+        }
 
         // --- CATEGORIA 3: DISTORÇÃO ELÁSTICA (WARPING) ---
-        else if (cenario == 8)  { for(int i=10; i<=15; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=25; i++) signal_b[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 9)  { for(int i=10; i<=25; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=15; i++) signal_b[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 10) { for(int i=5;  i<=10; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=35; i++) signal_b[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 11) { for(int i=5;  i<=35; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=10; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 8)  {
+            injetar_sinal_fixo(signal_a, 10, pulso_quadrado, 6);
+            preencher_constante_fixa(signal_b, 10, 25, 320); signal_b[9] = 150; signal_b[26] = 150;
+        }
+        else if (cenario == 9)  {
+            preencher_constante_fixa(signal_a, 10, 25, 320); signal_a[9] = 150; signal_a[26] = 150;
+            injetar_sinal_fixo(signal_b, 10, pulso_quadrado, 6);
+        }
+        else if (cenario == 10) {
+            injetar_sinal_fixo(signal_a, 5, pulso_gaussiano, 11);
+            // Rampa suave de expansão escalonada x100
+            for(int i=5; i<=35; i++) { signal_b[i] = 50 + (i - 5) * 11; }
+        }
+        else if (cenario == 11) {
+            for(int i=5; i<=35; i++) { signal_a[i] = 50 + (i - 5) * 11; }
+            injetar_sinal_fixo(signal_b, 5, pulso_gaussiano, 11);
+        }
 
         // --- CATEGORIA 4: RUÍDOS E ANOMALIAS ---
-        else if (cenario == 12) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; signal_b[2]=DTW_SCALE_FACTOR; signal_b[3]=DTW_SCALE_FACTOR; }
-        else if (cenario == 13) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; signal_b[42]=DTW_SCALE_FACTOR; signal_b[43]=DTW_SCALE_FACTOR; }
-        else if (cenario == 14) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=5;  i<=8;  i++) signal_b[i]=DTW_SCALE_FACTOR; for(int i=35; i<=38; i++) signal_b[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 15) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; for(int i=0;  i<=9;  i++) signal_b[i]=DTW_SCALE_FACTOR; for(int i=21; i<=44; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 12) {
+            injetar_sinal_fixo(signal_a, 10, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 10, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 2, ruido_forte, 3);
+        }
+        else if (cenario == 13) {
+            injetar_sinal_fixo(signal_a, 10, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 10, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 40, ruido_forte, 3);
+        }
+        else if (cenario == 14) {
+            injetar_sinal_fixo(signal_a, 10, pulso_gaussiano, 11);
+            injetar_sinal_fixo(signal_b, 5, ruido_forte, 3);
+            injetar_sinal_fixo(signal_b, 35, ruido_forte, 3);
+        }
+        else if (cenario == 15) {
+            injetar_sinal_fixo(signal_a, 10, pulso_gaussiano, 11);
+            preencher_constante_fixa(signal_b, 0, 44, 200);
+            for(int i=0; i<11; i++) { signal_b[10 + i] = 400 - pulso_gaussiano[i]; }
+        }
 
         // --- CATEGORIA 5: CASOS EXTREMOS DE SENSOR ---
-        else if (cenario == 16) { /* Ambos vazios (0), nada a fazer */ }
-        else if (cenario == 17) { for(int i=0; i<DTW_SIGNAL_SIZE; i++) { signal_a[i]=DTW_SCALE_FACTOR; signal_b[i]=DTW_SCALE_FACTOR; } }
-        else if (cenario == 18) { for(int i=10; i<=20; i++) signal_a[i]=DTW_SCALE_FACTOR; }
-        else if (cenario == 19) { for(int i=10; i<=20; i++) signal_b[i]=DTW_SCALE_FACTOR; }
+        else if (cenario == 16) { /* Ambos vazios (0) */ }
+        else if (cenario == 17) {
+            preencher_constante_fixa(signal_a, 0, 44, 500);
+            preencher_constante_fixa(signal_b, 0, 44, 500);
+        }
+        else if (cenario == 18) { injetar_sinal_fixo(signal_a, 10, pulso_gaussiano, 11); }
+        else if (cenario == 19) { injetar_sinal_fixo(signal_b, 10, pulso_gaussiano, 11); }
 
         // ==========================================================
         // EXECUÇÃO E BENCHMARKING
@@ -158,12 +241,12 @@ int main(void)
         HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
         // O TRUQUE DE ENGENHARIA: Restaura a vírgula para impressão no PC
-        // Imprime a parte inteira (distance / 1000) e a parte fracionária (distance % 1000)
-        printf("[%02d]| %6d.%03d   | %-11d | %lu ms\r\n", 
-               cenario, 
-               distance / DTW_SCALE_FACTOR, 
-               distance % DTW_SCALE_FACTOR, 
-               path_length, 
+        // Imprime a parte inteira (distance / 100) e a parte fracionária (distance % 100)
+        printf("[%02d]| %6d.%02d   | %-11d | %lu ms\r\n",
+               cenario,
+               distance / DTW_SCALE_FACTOR,
+               distance % DTW_SCALE_FACTOR,
+               path_length,
                tempo_execucao_ms);
     }
 

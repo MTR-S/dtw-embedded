@@ -8,7 +8,7 @@
  * * Contexto do desenvolvimento: Trabalho da disciplina Sistemas Embarcados/T2 (Migração).
  * * Entrada: O algoritmo DTW recebe os dois sinais a serem comparados em forma de vetor
  * de inteiros de 16 bits.
- * @note ARQUITETURA DE PONTO FIXO: Os valores de entrada (uint16_t) representam 
+ * @note ARQUITETURA DE PONTO FIXO: Os valores de entrada (uint16_t) representam
  * números decimais escalonados pelo fator DTW_SCALE_FACTOR.
  * * Saída: O módulo possui duas vias de saída:
  * 1. Retorno principal (uint16_t): A distância escalar mínima acumulada (custo DTW).
@@ -16,9 +16,9 @@
  * através dos ponteiros (dtw_path_point_t *path_out) e seu tamanho real (int *path_length).
  * * Plataforma Alvo: Placa Nucleo STM32F030R8 (ARM Cortex-M0).
  *
- * @note AJUSTE DE MIGRAÇÃO: Para contornar a limitação de 8KB de RAM e a ausência de FPU 
- * (Floating-Point Unit) na MCU, adotou-se a Matemática de Ponto Fixo. Os dados foram 
- * refatorados de 'float' para 'uint16_t' escalonados, e as coordenadas do caminho foram 
+ * @note AJUSTE DE MIGRAÇÃO: Para contornar a limitação de 8KB de RAM e a ausência de FPU
+ * (Floating-Point Unit) na MCU, adotou-se a Matemática de Ponto Fixo. Os dados foram
+ * refatorados de 'float' para 'uint16_t' escalonados, e as coordenadas do caminho foram
  * otimizadas de 'int' para 'uint8_t' (reduzindo o consumo de RAM no vetor em 75%).
  *
  * @author Matheus de Sousa Almeida e Vinicius Silva Pereira
@@ -34,7 +34,7 @@
 /** * @def DTW_SCALE_FACTOR
  * @brief Fator multiplicador para a matemática de Ponto Fixo (3 casas decimais).
  */
-#define DTW_SCALE_FACTOR 1000
+#define DTW_SCALE_FACTOR 100
 
 /** * @def DTW_SIGNAL_SIZE
  * @brief Tamanho fixo dos vetores de entrada (sinais).
