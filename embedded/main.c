@@ -1,19 +1,19 @@
 /**
  * @file      main.c
- * @author    Matheus de Sousa Almeida e [Nome da sua Dupla]
- * @date      11 de Maio de 2026
- * @brief     Bancada embarcada de validação do algoritmo DTW via UART (Ponto Fixo).
+ * @author    Matheus de Sousa Almeida e Vinicius Silva Pereira
+ * @date      Maio de 2026
+ * @brief     Bancada embarcada de validação do algoritmo DTW via UART (Adaptada para utilizar Ponto Fixo).
  * @details   Desenvolvido para a disciplina de Sistemas Embarcados (T2).
  * O sistema gera arrays de sinais escalonados simulando curvas analógicas,
  * calcula a distância elástica temporal e transmite os resultados decimais via USART2.
  * @copyright Todos os direitos reservados.
  *
  * @note      RESTRIÇÕES DA PLATAFORMA ALVO:
- * - MCU: STM32F030R8 (ARM Cortex-M0 sem FPU).
+ * - MCU: STM32F030R8.
  * - Memória limitante: 8 KB SRAM.
  * - Solução: Adoção de Matemática de Ponto Fixo. Sinais e Matriz DTW foram refatorados
- * para 'uint16_t' com fator de escala 100 (2 casas decimais). Isso eliminou
- * o overhead de processamento (soft-float) e impediu o RAM/Integer Overflow.
+ * para 'uint16_t' com fator de escala definido no arquivo "dtw.h". Isso eliminou
+ * o overhead de processamento e impediu o RAM Overflow.
  */
 
 /* Includes ------------------------------------------------------------------*/
@@ -85,6 +85,17 @@ void preencher_constante_fixa(uint16_t *vetor, int inicio, int fim, uint16_t val
         vetor[i] = valor;
     }
 }
+
+  /* ==========================================================
+   * BIBLIOTECA DE PADRÕES DE ONDA (ESCALONADOS x100)
+   * Armazenados na Flash (static const) para evitar consumo de SRAM
+   * ========================================================== */
+static const uint16_t pulso_gaussiano[11] = {20, 60, 150, 280, 370, 400, 370, 280, 150, 60, 20};
+
+static const uint16_t pulso_quadrado[6] = {150, 320, 320, 320, 320, 150};
+
+static const uint16_t ruido_forte[3] = {380, 450, 290};
+
 /* USER CODE END 0 */
 
 /**
@@ -103,19 +114,13 @@ int main(void)
 
   /* USER CODE BEGIN 2 */
 
+
+  
   // Alocação das variáveis com uint16_t (Ponto Fixo)
   uint16_t signal_a[DTW_SIGNAL_SIZE] = {0};
   uint16_t signal_b[DTW_SIGNAL_SIZE] = {0};
   dtw_path_point_t path[DTW_MAX_PATH_LEN];
   int path_length = 0;
-
-  /* ==========================================================
-   * BIBLIOTECA DE PADRÕES DE ONDA (ESCALONADOS x100)
-   * Armazenados na Flash (const) para evitar consumo de SRAM
-   * ========================================================== */
-  const uint16_t pulso_gaussiano[11] = {20, 60, 150, 280, 370, 400, 370, 280, 150, 60, 20};
-  const uint16_t pulso_quadrado[6]   = {150, 320, 320, 320, 320, 150};
-  const uint16_t ruido_forte[3]      = {380, 450, 290};
 
   // Limpa o terminal na inicialização
   printf("\033[2J\033[H");
@@ -240,7 +245,7 @@ int main(void)
         // Pisca o LED da placa para mostrar que está processando
         HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 
-        // O TRUQUE DE ENGENHARIA: Restaura a vírgula para impressão no PC
+        // Restaura a vírgula para impressão no PC
         // Imprime a parte inteira (distance / 100) e a parte fracionária (distance % 100)
         printf("[%02d]| %6d.%02d   | %-11d | %lu ms\r\n",
                cenario,

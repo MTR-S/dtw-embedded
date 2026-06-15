@@ -1,0 +1,27 @@
+===============================================================================================
+RELATORIO DE VALIDACAO (APENAS PYTHON SciPy)
+===============================================================================================
+ID  | CATEGORIA              | DISTÂNCIA ESCALAR  | PASSOS ROTA  | TEMPO DE EXECUÇÃO (us)   
+-----------------------------------------------------------------------------------------------
+[00] | 1. Sinais Iguais       | 0.00               | 45           |          1093.6 us
+[01] | 1. Sinais Iguais       | 0.00               | 45           |           537.2 us
+[02] | 1. Sinais Iguais       | 0.00               | 45           |           549.1 us
+[03] | 1. Sinais Iguais       | 0.00               | 45           |           588.2 us
+[04] | 2. Atraso Temporal     | 0.00               | 50           |           647.0 us
+[05] | 2. Atraso Temporal     | 0.00               | 55           |           662.4 us
+[06] | 2. Atraso Temporal     | 0.00               | 70           |           678.1 us
+[07] | 2. Atraso Temporal     | 0.00               | 70           |           891.7 us
+[08] | 3. Distorcao (Warping) | 0.00               | 57           |           896.4 us
+[09] | 3. Distorcao (Warping) | 0.00               | 57           |           566.9 us
+[10] | 3. Distorcao (Warping) | 11.45              | 68           |           580.3 us
+[11] | 3. Distorcao (Warping) | 11.45              | 68           |           596.7 us
+[12] | 4. Ruidos/Anomalias    | 11.20              | 45           |           518.0 us
+[13] | 4. Ruidos/Anomalias    | 11.20              | 45           |           512.7 us
+[14] | 4. Ruidos/Anomalias    | 17.90              | 56           |          1162.7 us
+[15] | 4. Ruidos/Anomalias    | 83.80              | 50           |           598.3 us
+[16] | 5. Extremos de Sensor  | 0.00               | 45           |           663.3 us
+[17] | 5. Extremos de Sensor  | 0.00               | 45           |           517.0 us
+[18] | 5. Extremos de Sensor  | 21.60              | 45           |           534.7 us
+[19] | 5. Extremos de Sensor  | 21.60              | 45           |           506.3 us
+===============================================================================================
+TESTE CONCLUIDO COM SUCESSO.

@@ -3,8 +3,8 @@ Script de Validação Tripla (MIL + HIL) e Benchmarking do DTW.
 
 Este script atua como o orquestrador Mestre. Ele executa 3 vertentes simultâneas:
 1. Python (SciPy): O "Gabarito de Ouro" matemático.
-2. C (PC Host): O modelo em C de referência rodando com recursos infinitos (Float 32-bit).
-3. C (STM32 HIL): O modelo físico em Ponto Fixo (16-bit) via UART (Hardware-in-the-Loop).
+2. C (PC Host): O modelo em C de referência (Float 32-bit).
+3. C (STM32 HIL): O modelo físico em Ponto Fixo (16-bit) via UART.
 
 Autor: Matheus de Sousa Almeida e Vinicius Silva Pereira
 Data: Maio de 2026
@@ -12,25 +12,26 @@ Data: Maio de 2026
 
 import numpy as np
 from dtw import dtw
+
 import serial
+import subprocess
+
 import time
 import re
 import sys
-import subprocess
 
 # ==============================================================================
 # CONFIGURAÇÕES DO AMBIENTE
 # ==============================================================================
-PORTA_SERIAL = "COM6"  # Troque para a porta correta (ex: COM4, /dev/ttyS3 no WSL)
+PORTA_SERIAL = "COM7"  
 BAUD_RATE = 115200
 ARQUIVO_SAIDA = "relatorio_dtw_triplo.txt"
-EXECUTAVEL_C = "./dtw_app.exe"  # No Windows, pode ser "./dtw_app.exe"
+EXECUTAVEL_C = "./dtw_app.exe" 
 
 def gerar_sinais(cenario: int) -> tuple[np.ndarray, np.ndarray]:
     """Gera o par de sinais sintéticos exatos usando os fatores da placa."""
     sig_a, sig_b = np.zeros(45), np.zeros(45)
     
-    # Padrões originais sem escala (o Python e o C do PC cuidam da matemática float)
     pulso_gaussiano = np.array([0.2, 0.6, 1.5, 2.8, 3.7, 4.0, 3.7, 2.8, 1.5, 0.6, 0.2])
     pulso_quadrado  = np.array([1.5, 3.2, 3.2, 3.2, 3.2, 1.5])
     ruido_forte     = np.array([3.8, 4.5, 2.9])
@@ -108,7 +109,7 @@ for cenario in range(20):
     
     # --- 1. Roda o Python ---
     start_py = time.perf_counter()
-    alignment = dtw(sig_a, sig_b, dist_method='cityblock')
+    alignment = dtw(sig_a, sig_b, dist_method='cityblock', step_pattern='symmetric1')
     end_py = time.perf_counter()
     
     py_custo = alignment.distance
@@ -175,10 +176,10 @@ try:
             
             # Validação Tripla: O C do PC deve ser quase idêntico ao Python, 
             # e a STM32 deve ter tolerância de 0.05 pelo Ponto Fixo (2 casas).
-            paridade = "✅ Passou"
-            if abs(ref['py_custo'] - ref['c_custo']) > 1e-4: paridade = "❌ Falhou (PC)"
-            if abs(ref['py_custo'] - stm_custo) > 0.05: paridade = "❌ Falhou (STM32)"
-            if not (ref['py_passos'] == ref['c_passos'] == stm_passos): paridade = "❌ Falhou (Rotas)"
+            paridade = "Valores equivalentes"
+            if abs(ref['py_custo'] - ref['c_custo']) > 1e-4: paridade = "Divergência (PC)"
+            if abs(ref['py_custo'] - stm_custo) > 0.05: paridade = "Divergência (STM32)"
+            if not (ref['py_passos'] == ref['c_passos'] == stm_passos): paridade = "Divergência (Rotas)"
 
             # Montagem da Super Linha da Tabela
             linha_tabela = f"[{cenario:02d}] | {categorizar(cenario):<22} | {ref['py_custo']:<9.2f}| {ref['c_custo']:<9.2f}| {stm_custo:<8.2f} | {ref['py_passos']:<5d}| {ref['c_passos']:<5d}| {stm_passos:<5d} | {ref['py_tempo_us']:>8.1f} us| {ref['c_tempo_us']:>7.1f} us| {stm_tempo_ms:>5d} ms | {paridade}"
@@ -188,7 +189,7 @@ try:
 
 except serial.SerialException as e:
     print(f"\n[ERRO FATAL] Nao foi possivel abrir a porta {PORTA_SERIAL}.")
-    print("Verifique se o TeraTerm/PuTTY esta FECHADO e a porta esta correta.")
+    print("Verifique se o software de CLI esta FECHADO e a porta esta correta.")
     sys.exit(1)
 
 # Fechamento e exportação

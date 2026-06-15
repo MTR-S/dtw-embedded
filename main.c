@@ -5,11 +5,14 @@
  * @details Como usar (help): Este arquivo contém o ponto de entrada principal do programa.
  * Ele inicializa os vetores, aguarda a injeção do ID do cenário via entrada padrão (stdin),
  * popula os sinais com formatos analógicos variados, aciona o cálculo DTW e exibe os resultados.
+ * 
  * Ele foi projetado para ser orquestrado por um script Python externo.
  * * Contexto do desenvolvimento: Trabalho da disciplina Sistemas Embarcados/T1 Workstation.
+ * 
  * * Entrada: Um número inteiro (0 a 19) via entrada padrão (`stdin`), representando o cenário.
  * * Saída: Texto formatado via saída padrão (`stdout`) contendo a Distância Escalar DTW (Custo), 
  * o número de passos do caminho ótimo (Backtracking) e o tempo de execução em segundos.
+ * 
  * * Plataforma Alvo: Estação de Trabalho Host (PC Windows/Linux/macOS).
  *
  * @author Matheus de Sousa Almeida e Vinicius Silva Pereira
@@ -24,7 +27,7 @@
 #include "dtw.h"
 
 /* ==========================================================================
- * FUNÇÕES AUXILIARES PARA INJEÇÃO DE SINAIS NÃO-BINÁRIOS
+ * FUNÇÕES AUXILIARES PARA INJEÇÃO DE SINAIS DE ENTRADA
  * ========================================================================== */
 
 /**

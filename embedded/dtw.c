@@ -4,20 +4,24 @@
  *
  * @details Como usar (help): Este arquivo contém a lógica de tabulação iterativa e o
  * backtracking não-recursivo do DTW. Compile junto com o arquivo principal da aplicação.
+ * 
  * * * Contexto do desenvolvimento: Trabalho da disciplina Sistemas Embarcados/T2.
+ * 
  * * Entrada: O algoritmo DTW recebe os dois sinais a serem comparados em forma de vetor
  * de inteiros de 16 bits.
  * @note ARQUITETURA DE PONTO FIXO: Os vetores (const uint16_t *signal_a e *signal_b)
  * não são inteiros puros, mas sim representações decimais escalonadas por um fator
- * multiplicador (ex: x1000 para 3 casas decimais). O valor 1000 representa 1.000.
+ * multiplicador (ex: x100 para 2 casas decimais). O valor 1000 representa 10.00.
+ * 
  * * * Saída: O módulo possui duas vias de saída:
  * 1. Retorno principal (uint16_t): A distância escalar mínima acumulada em Ponto Fixo.
  * 2. Parâmetros por referência: O caminho ótimo de alinhamento (dtw_path_point_t *path_out)
  * e seu tamanho real (int *path_length).
- * * Plataforma Alvo: Nucleo STM32F030R8 (ARM Cortex-M0).
+ * 
+ * * Plataforma Alvo: Nucleo STM32F030R8.
  *
  * @author Matheus de Sousa Almeida e Vinicius Silva Pereira
- * @date 11 de Maio de 2026
+ * @date Maio de 2026
  * @copyright Permissões de uso: Uso acadêmico.
  */
 
