@@ -1,7 +1,6 @@
-# Projeto: Dynamic Time Warping (DTW) com Backtracking - Etapa T1
+# Projeto DTW (Dynamic Time Warping) - Sistemas Embarcados
 
-## Apresentação Geral e Contexto
-Este projeto faz parte da disciplina de Sistemas Embarcados (Etapa T1 - Workstation). O objetivo é implementar o algoritmo **Dynamic Time Warping (DTW)** na estação de trabalho (Host/PC) como prova de conceito, já projetado estritamente para os recursos e limitações de um sistema embarcado.
+Este repositório contém a implementação rigorosa em linguagem C do algoritmo **Dynamic Time Warping (DTW)** com suporte a *Backtracking*, desenvolvido como parte da avaliação "T1 Workstation" para a disciplina de Sistemas Embarcados.
 
 O algoritmo mede a similaridade entre duas sequências temporais sujeitas a distorções (ex: variação de velocidade) e traça o caminho ótimo de alinhamento. A arquitetura de software obedece a três regras restritas:
 1. **100% Iterativo:** Nenhuma função recursiva é utilizada.
@@ -9,7 +8,7 @@ O algoritmo mede a similaridade entre duas sequências temporais sujeitas a dist
 3. **Controle de Memória:** Estrutura de dados central alocada globalmente (matriz de ~8 Kbytes em tempo de compilação).
 
 ## Autores / Estudantes
-- Matheus de Sousa Almeida a
+- Matheus de Sousa Almeida
 - Vinicius Silva Pereira
 
 ## Plataforma Alvo

@@ -1,0 +1,28 @@
+===========================================================================================================================================================
+RELATORIO TRIPLO DE VALIDACAO (PYTHON SciPy vs C HOST vs STM32 HIL)
+===========================================================================================================================================================
+ID  | CATEGORIA              | DISTÂNCIA ESCALAR DTW          | PASSOS ROTA        | TEMPOS DE EXECUÇÃO               | PARIDADE
+    |                        | Python   | C (PC)   | STM32    | Py   | C_PC | STM32| Python (us)| C PC (us) | STM32 (ms) | 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+[00] | 1. Sinais Iguais       | 0.00     | 0.00     | 0.00     | 45   | 45   | 45    |   1646.4 us|    32.4 us|     8 ms | Valores equivalentes
+[01] | 1. Sinais Iguais       | 0.00     | 0.00     | 0.00     | 45   | 45   | 45    |   1187.8 us|    20.5 us|     8 ms | Valores equivalentes
+[02] | 1. Sinais Iguais       | 0.00     | 0.00     | 0.00     | 45   | 45   | 45    |    899.0 us|    44.1 us|     8 ms | Valores equivalentes
+[03] | 1. Sinais Iguais       | 0.00     | 0.00     | 0.00     | 45   | 45   | 45    |    763.6 us|    21.9 us|     7 ms | Valores equivalentes
+[04] | 2. Atraso Temporal     | 0.00     | 0.00     | 0.00     | 50   | 50   | 50    |   1137.0 us|    21.9 us|     8 ms | Valores equivalentes
+[05] | 2. Atraso Temporal     | 0.00     | 0.00     | 0.00     | 55   | 55   | 55    |    578.1 us|    77.3 us|     8 ms | Valores equivalentes
+[06] | 2. Atraso Temporal     | 0.00     | 0.00     | 0.00     | 70   | 70   | 70    |   2208.7 us|    23.1 us|     8 ms | Valores equivalentes
+[07] | 2. Atraso Temporal     | 0.00     | 0.00     | 0.00     | 70   | 70   | 70    |   1424.9 us|    30.1 us|     8 ms | Valores equivalentes
+[08] | 3. Distorcao (Warping) | 0.00     | 0.00     | 0.00     | 57   | 57   | 57    |   2345.4 us|    41.9 us|     8 ms | Valores equivalentes
+[09] | 3. Distorcao (Warping) | 0.00     | 0.00     | 0.00     | 57   | 57   | 57    |    824.5 us|    32.6 us|     8 ms | Valores equivalentes
+[10] | 3. Distorcao (Warping) | 14.27    | 11.45    | 11.45    | 72   | 68   | 68    |   1176.6 us|    44.4 us|     8 ms | Divergência (Rotas)
+[11] | 3. Distorcao (Warping) | 14.27    | 11.45    | 11.45    | 72   | 68   | 68    |    915.2 us|    70.5 us|     8 ms | Divergência (Rotas)
+[12] | 4. Ruidos/Anomalias    | 11.20    | 11.20    | 11.20    | 48   | 45   | 45    |   1242.0 us|    23.3 us|     8 ms | Divergência (Rotas)
+[13] | 4. Ruidos/Anomalias    | 11.20    | 11.20    | 11.20    | 48   | 45   | 45    |    533.4 us|    25.6 us|     8 ms | Divergência (Rotas)
+[14] | 4. Ruidos/Anomalias    | 19.70    | 17.90    | 17.90    | 58   | 56   | 56    |    871.3 us|    22.6 us|     8 ms | Divergência (Rotas)
+[15] | 4. Ruidos/Anomalias    | 90.90    | 83.80    | 83.80    | 83   | 50   | 50    |   1212.0 us|    24.3 us|     8 ms | Divergência (Rotas)
+[16] | 5. Extremos de Sensor  | 0.00     | 0.00     | 0.00     | 45   | 45   | 45    |    558.8 us|    16.5 us|     8 ms | Valores equivalentes
+[17] | 5. Extremos de Sensor  | 0.00     | 0.00     | 0.00     | 45   | 45   | 45    |    918.7 us|    17.7 us|     8 ms | Valores equivalentes
+[18] | 5. Extremos de Sensor  | 21.60    | 21.60    | 21.60    | 56   | 45   | 45    |    763.1 us|    28.7 us|     7 ms | Divergência (Rotas)
+[19] | 5. Extremos de Sensor  | 21.60    | 21.60    | 21.60    | 56   | 45   | 45    |   1190.8 us|    35.1 us|     8 ms | Divergência (Rotas)
+===========================================================================================================================================================
+TESTE TRIPLO MIL+HIL CONCLUIDO COM SUCESSO.
