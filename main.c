@@ -169,28 +169,65 @@ int main(void) {
     else if (CENARIO_TESTE == 19) { injetar_sinal(signal_b, 10, pulso_gaussiano, 11); } 
 
     /* ----------------------------------------------------------------------
-     * EXECUÇÃO E BENCHMARKING DE PERFORMANCE
-     * Mede o tempo de relógio monotônico contornando oscilações de SO.
+     * EXECUÇÃO E BENCHMARKING DE PERFORMANCE (ROBUSTO)
      * ---------------------------------------------------------------------- */
-    struct timespec start; /**< Estrutura para capturar o tempo de início. */
-    struct timespec end;   /**< Estrutura para capturar o tempo de término. */
+    #define NUM_EXECUCOES 100
     
-    clock_gettime(CLOCK_MONOTONIC, &start); 
+    struct timespec start, end;
+    //double tempos[NUM_EXECUCOES];
+    double soma_tempos = 0.0;
+    double tempo_minimo = 1e9; // Valor inicial absurdamente alto
+    double tempo_maximo = 0.0;
     
-    // Chama o módulo core do DTW
-    float distance = dtw_compute(signal_a, signal_b, path, &path_length);
-    
-    clock_gettime(CLOCK_MONOTONIC, &end); 
+    // Variáveis auxiliares para capturar o resultado e enganar o compilador
+    float distance = 0.0f;
+    volatile float dummy_accumulator = 0.0f; 
 
-    // Converte segundos e nanossegundos para uma única variável float em segundos
-    double tempo_execucao_s = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+    // 1. WARM-UP (Aquecimento da Cache)
+    // Roda 5 vezes no "vazio" para garantir que as instruções do DTW e 
+    // os vetores signal_a e signal_b estejam na L1/L2 Cache.
+    for (int i = 0; i < 5; i++) {
+        dtw_compute(signal_a, signal_b, path, &path_length);
+    }
+
+    // 2. BENCHMARKING REAL
+    for (int i = 0; i < NUM_EXECUCOES; i++) {
+        clock_gettime(CLOCK_MONOTONIC, &start); 
+        
+        // Chama o módulo core do DTW
+        distance = dtw_compute(signal_a, signal_b, path, &path_length);
+        
+        clock_gettime(CLOCK_MONOTONIC, &end); 
+        
+        // Força o uso da variável para o compilador não ignorar a chamada
+        dummy_accumulator += distance; 
+
+        // Converte para segundos
+        double tempo_s = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        
+        //tempos[i] = tempo_s;
+        soma_tempos += tempo_s;
+        
+        // Atualiza mínimo e máximo
+        if (tempo_s < tempo_minimo) tempo_minimo = tempo_s;
+        if (tempo_s > tempo_maximo) tempo_maximo = tempo_s;
+    }
+
+    double tempo_medio = soma_tempos / NUM_EXECUCOES;
 
     /* ----------------------------------------------------------------------
      * EXPORTAÇÃO DOS RESULTADOS 
      * ---------------------------------------------------------------------- */
+    printf("\n================ RESULTADOS DO BENCHMARK ================\n");
     printf(" -> Distancia Escalar DTW Final: %.8f\n", distance);
     printf(" -> Passos no Caminho Otimo: %d passos\n", path_length);
-    printf(" -> Tempo de Execucao (C): %.7f segundos\n", tempo_execucao_s);
+    printf("---------------------------------------------------------\n");
+    printf(" -> Amostras executadas: %d\n", NUM_EXECUCOES);
+    printf(" -> Tempo Minimo: %.8f segundos (Mais proximo do real)\n", tempo_minimo);
+    printf(" -> Tempo Medio : %.8f segundos\n", tempo_medio);
+    printf(" -> Tempo Maximo: %.8f segundos (Afetado pelo SO)\n", tempo_maximo);
+    printf("=========================================================\n");
+
 
     return 0;
 }

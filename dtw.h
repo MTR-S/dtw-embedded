@@ -23,6 +23,8 @@
  * @copyright Permissões de uso: Uso acadêmico.
  */
 
+
+ 
 #ifndef DTW_H
 #define DTW_H
 
@@ -31,6 +33,14 @@
  * @brief Tamanho fixo dos vetores de entrada (sinais).
  */
 #define DTW_SIGNAL_SIZE 45 /**< Dimensão padrão dos sinais amostrados para o cálculo DTW. */
+
+
+/** * @def DTW_WINDOW_SIZE
+ * @brief Largura da Banda de Sakoe-Chiba (w). 
+ * Restringe a busca em torno da diagonal principal.
+ */
+#define DTW_WINDOW_SIZE 10
+
 
 /** 
  * @def DTW_MAX_PATH_LEN
