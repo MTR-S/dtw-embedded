@@ -38,6 +38,25 @@
  */
 #define DTW_MAX_PATH_LEN ((DTW_SIGNAL_SIZE * 2) - 1) /**< Pior caso de deslocamento na matriz: N + M - 1. */
 
+/** 
+ * @def DTW_WINDOW
+ * @brief Tamanho da janela de Sakoe-Chiba para limitar o cálculo DTW, reduzindo a complexidade.
+ */
+#define DTW_WINDOW 5 /**< Tamanho da janela de Sakoe-Chiba para limitar o cálculo DTW, reduzindo a complexidade. */
+
+
+/** 
+ * @def DTW_WINDOW
+ * @brief Tamanho da janela de Sakoe-Chiba para limitar o cálculo DTW, reduzindo a complexidade.
+ */
+#define DTW_WINDOW 5 /**< Tamanho da janela de Sakoe-Chiba para limitar o cálculo DTW, reduzindo a complexidade. */
+
+/** 
+ * @def DTW_INFINITY
+ * @brief Valor que representa o infinito para a matriz de custo.
+ */
+#define DTW_INFINITY 65535 /**<O "Infinito" para o uint16_t */
+
 /**
  * @struct dtw_path_point_t
  * @brief Coordenadas que representam um ponto na matriz de custo durante o backtracking.

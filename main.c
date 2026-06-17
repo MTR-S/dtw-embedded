@@ -20,6 +20,8 @@
  * @copyright Permissões de uso: Uso acadêmico.
  */
 
+#define CONVERTE_SEGUNDOS_EM_NANOSSEGUNDOS 1000000000LL /**< Constante para conversão de segundos para nanossegundos. */
+#define CONVERTE_NANOSSEGUNDOS_EM_MICROSEGUNDOS 1000.0 /**< Constante para conversão de nanossegundos para microssegundos. */
 #define _POSIX_C_SOURCE 199309L /**< Habilita funções de tempo de alta precisão do POSIX. */
 #include <stdio.h>
 #include <stdlib.h> 
@@ -172,25 +174,37 @@ int main(void) {
      * EXECUÇÃO E BENCHMARKING DE PERFORMANCE
      * Mede o tempo de relógio monotônico contornando oscilações de SO.
      * ---------------------------------------------------------------------- */
+
+    // 1. Inicia a contagem de tempo usando clock_gettime com CLOCK_MONOTONIC
     struct timespec start; /**< Estrutura para capturar o tempo de início. */
     struct timespec end;   /**< Estrutura para capturar o tempo de término. */
     
     clock_gettime(CLOCK_MONOTONIC, &start); 
     
-    // Chama o módulo core do DTW
-    float distance = dtw_compute(signal_a, signal_b, path, &path_length);
-    
+    // 2. Executa o cálculo DTW 100 vezes para obter uma média de tempo de execução
+    float distance = 0.0f; 
+    for (int k = 0; k < 100; k++) {
+    // Chama o módulo core do Algoritmo DTW
+        distance = dtw_compute(signal_a, signal_b, path, &path_length);
+    }
+
     clock_gettime(CLOCK_MONOTONIC, &end); 
 
-    // Converte segundos e nanossegundos para uma única variável float em segundos
-    double tempo_execucao_s = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+     // 3. Calcula o tempo de execução em nanossegundos e microsegundos
+    double tempo_execucao_ns = (end.tv_sec - start.tv_sec) * CONVERTE_SEGUNDOS_EM_NANOSSEGUNDOS + (end.tv_nsec - start.tv_nsec);
+
+    double tempo_medio_μs = (tempo_execucao_ns / 100.0) / CONVERTE_NANOSSEGUNDOS_EM_MICROSEGUNDOS;
+
+    //4. Exibe os resultados de benchmarking 
+    printf("\nTempo Medio PC Microsegundos (100 runs): %.7f μs", tempo_medio_μs);
+    printf("\nTempo Medio PC Nanosegundos (100 runs): %.7f ns\n\n", tempo_execucao_ns);
 
     /* ----------------------------------------------------------------------
      * EXPORTAÇÃO DOS RESULTADOS 
      * ---------------------------------------------------------------------- */
     printf(" -> Distancia Escalar DTW Final: %.8f\n", distance);
     printf(" -> Passos no Caminho Otimo: %d passos\n", path_length);
-    printf(" -> Tempo de Execucao (C): %.7f segundos\n", tempo_execucao_s);
+    printf(" -> Tempo de Execucao (C): %.7f nanosegundos\n", tempo_execucao_ns);
 
     return 0;
 }
