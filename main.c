@@ -168,15 +168,14 @@ int main(void) {
     else if (CENARIO_TESTE == 18) { injetar_sinal(signal_a, 10, pulso_gaussiano, 11); } 
     else if (CENARIO_TESTE == 19) { injetar_sinal(signal_b, 10, pulso_gaussiano, 11); } 
 
-    /* ----------------------------------------------------------------------
-     * EXECUÇÃO E BENCHMARKING DE PERFORMANCE (ROBUSTO)
+  /* ----------------------------------------------------------------------
+     * EXECUÇÃO E BENCHMARKING DE PERFORMANCE (ROBUSTO - EM MICROSSEGUNDOS)
      * ---------------------------------------------------------------------- */
     #define NUM_EXECUCOES 100
     
     struct timespec start, end;
-    //double tempos[NUM_EXECUCOES];
     double soma_tempos = 0.0;
-    double tempo_minimo = 1e9; // Valor inicial absurdamente alto
+    double tempo_minimo = 1e9; // Mantém um valor alto inicial para a lógica de mínimo
     double tempo_maximo = 0.0;
     
     // Variáveis auxiliares para capturar o resultado e enganar o compilador
@@ -184,8 +183,6 @@ int main(void) {
     volatile float dummy_accumulator = 0.0f; 
 
     // 1. WARM-UP (Aquecimento da Cache)
-    // Roda 5 vezes no "vazio" para garantir que as instruções do DTW e 
-    // os vetores signal_a e signal_b estejam na L1/L2 Cache.
     for (int i = 0; i < 5; i++) {
         dtw_compute(signal_a, signal_b, path, &path_length);
     }
@@ -194,23 +191,20 @@ int main(void) {
     for (int i = 0; i < NUM_EXECUCOES; i++) {
         clock_gettime(CLOCK_MONOTONIC, &start); 
         
-        // Chama o módulo core do DTW
         distance = dtw_compute(signal_a, signal_b, path, &path_length);
         
         clock_gettime(CLOCK_MONOTONIC, &end); 
         
-        // Força o uso da variável para o compilador não ignorar a chamada
         dummy_accumulator += distance; 
 
-        // Converte para segundos
-        double tempo_s = (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1e9;
+        // CÁLCULO EM MICROSSEGUNDOS (us): 
+        // Multiplica os segundos por 1.000.000 e divide os nanossegundos por 1.000
+        double tempo_us = (end.tv_sec - start.tv_sec) * 1000000.0 + (end.tv_nsec - start.tv_nsec) / 1000.0;
         
-        //tempos[i] = tempo_s;
-        soma_tempos += tempo_s;
+        soma_tempos += tempo_us;
         
-        // Atualiza mínimo e máximo
-        if (tempo_s < tempo_minimo) tempo_minimo = tempo_s;
-        if (tempo_s > tempo_maximo) tempo_maximo = tempo_s;
+        if (tempo_us < tempo_minimo) tempo_minimo = tempo_us;
+        if (tempo_us > tempo_maximo) tempo_maximo = tempo_us;
     }
 
     double tempo_medio = soma_tempos / NUM_EXECUCOES;
@@ -223,11 +217,10 @@ int main(void) {
     printf(" -> Passos no Caminho Otimo: %d passos\n", path_length);
     printf("---------------------------------------------------------\n");
     printf(" -> Amostras executadas: %d\n", NUM_EXECUCOES);
-    printf(" -> Tempo Minimo: %.8f segundos (Mais proximo do real)\n", tempo_minimo);
-    printf(" -> Tempo Medio : %.8f segundos\n", tempo_medio);
-    printf(" -> Tempo Maximo: %.8f segundos (Afetado pelo SO)\n", tempo_maximo);
+    printf(" -> Tempo Minimo: %.3f us (Mais proximo do real)\n", tempo_minimo);
+    printf(" -> Tempo Medio : %.3f us\n", tempo_medio);
+    printf(" -> Tempo Maximo: %.3f us (Afetado pelo SO)\n", tempo_maximo);
     printf("=========================================================\n");
-
 
     return 0;
 }
