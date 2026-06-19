@@ -39,7 +39,7 @@
  * @brief Largura da Banda de Sakoe-Chiba (w). 
  * Restringe a busca em torno da diagonal principal.
  */
-#define DTW_WINDOW_SIZE 10
+#define DTW_WINDOW_SIZE 5
 
 
 /** 
